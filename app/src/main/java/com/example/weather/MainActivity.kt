@@ -4,44 +4,33 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.weather.ui.screens.HomeScreen
 import com.example.weather.ui.theme.WeatherTheme
+import com.example.weather.ui.viewmodels.HomeVM
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(
+
+) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val homeViewModel: HomeVM = viewModel(
+                factory = HomeVM.Factory
+            )
             WeatherTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                HomeScreen(vm = homeViewModel)
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
+fun test()
+{
+    val homeViewModel: HomeVM = viewModel(
+        factory = HomeVM.Factory
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    WeatherTheme {
-        Greeting("Android")
-    }
 }
