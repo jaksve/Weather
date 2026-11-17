@@ -1,6 +1,7 @@
 package com.example.weather.ui.screens
 
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,10 +12,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -39,155 +42,144 @@ import com.example.weather.ui.viewmodels.Forecast
 import com.example.weather.ui.viewmodels.HomeViewModel
 
 //Homescreen with a search function
-@Composable
-fun CloudIcon(cloudAreaFraction: Int) {
-    if (cloudAreaFraction < 40) {
-        Icon(
-            imageVector = Icons.Outlined.WbSunny,
-            contentDescription = "Sunny",
-            tint = Color(0xFFFFB300)   // amber
-        )
-    } else {
-        Icon(
-            imageVector = Icons.Filled.Cloud,
-            contentDescription = "Cloudy",
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
+
 @Composable
 fun ForecastList(
     modifier: Modifier = Modifier,
-    forecasts: List<Forecast>
+    forecasts: List<Forecast>,
+    onGetWeather:(day: Int)->Unit
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier,
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         itemsIndexed(forecasts) { index, forecast ->
-            ForecastRow(day = index + 1, forecast = forecast)
+            ForecastRow(
+                day = index + 1,
+                forecast = forecast,
+                onGetWeather = onGetWeather)
         }
     }
 }
 
 @Composable
-fun ForecastRow(day: Int, forecast: Forecast) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+fun ForecastRow(
+    day: Int,
+    forecast: Forecast,
+    onGetWeather: (day: Int) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth()
+            .clickable {onGetWeather(forecast.time.day)}) {
         Row(
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(Modifier.weight(1f)) {
-                // ... day title, temp, wind texts
+                Text(
+                    text = "Day $day",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "Temp: ${String.format("%.1f", forecast.temp)}°C",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = "Wind: ${forecast.windDirection}°  •  Cloud: ${(forecast.cloudAreaFraction/8)*100}%",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             CloudIcon(cloudAreaFraction = forecast.cloudAreaFraction)
         }
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(
-                text = "Day $day",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = "Temp: ${String.format("%.1f", forecast.temp)}°C",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Text(
-                text = "Wind: ${forecast.windDirection}°  •  Cloud: ${forecast.cloudAreaFraction}%",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
     }
 }
-    @Composable
-    fun HomeScreen(
-        vm: HomeViewModel
-    ) {
-        var lat by remember { mutableStateOf("") }
-        var lon by remember { mutableStateOf("") }
-        val sevenForecast by vm.forecast.collectAsState()
-        Scaffold()
-        {
+
+@Composable
+fun HomeScreen(
+    vm: HomeViewModel,
+    onGetWeather:(day: Int)->Unit,
+    onGetSettings: ()->Unit
+) {
+    //var lat by remember { mutableStateOf("") }
+    //var lon by remember { mutableStateOf("") }
+    var city by remember { mutableStateOf("") }
+    val sevenForecast by vm.forecast.collectAsState()
+    val favourites by vm.favourites.collectAsState()
+
+
+    Scaffold { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            ForecastList(
+                forecasts = sevenForecast,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                onGetWeather = onGetWeather
+            )
+
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(it),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            )
-            {
-                ForecastList(
-                    forecasts = sevenForecast
-                )
-                //stockholm :  59.32944° N, 18.06861° E
-
-                //haparanda 65°50′03″N, 24°07′01″Ö
-
-            }
-            OutlinedTextField(
-                value = lon,
-                onValueChange = { lon = it },
-                label = { Text("Longitude") },
-                placeholder = { Text("e.g. 18.077207") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            )
-            Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
-                value = lat,
-                onValueChange = { lat = it },
-                label = { Text("Latitude") },
-                placeholder = { Text("e.g. 59.33036") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            )
-            Spacer(Modifier.height(8.dp))
-            Button(
-                onClick = {
-                    val latVal = lat.toDoubleOrNull()
-                    val lonVal = lon.toDoubleOrNull()
-                    if (latVal != null && lonVal != null) {
-                        vm.search(latVal, lonVal)
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            ) {
-                Text("Search")
-            }
-            Spacer(Modifier.height(16.dp))
-        
-            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
-            )
-            {
-                Button(onClick = {
-                    vm.search(59.32944, 18.06861)
-                })
-                {
-                    Text(text = "Stockholm")
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = city,
+                        onValueChange = { city = it },
+                        label = { Text("Place") },
+                        placeholder = { Text("London") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        singleLine = true,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
 
-                Button(onClick = {
-                    vm.search(65.83417, 24.11694)
-                })
+                Button(
+                    onClick = {
+                        if (city != "") {
+                            vm.search(city)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Search")
+                }
+                LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(favourites, key = { it }) { favourite ->
+                            Button(onClick = { vm.search(favourite) }) {
+                                Text(text = favourite)
+                            }
+                        }
+                    }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                )
                 {
-                    Text(text = "Haparanda")
+                    Button(onClick = { onGetSettings() }) {
+                        Text(text = "Settings")
+                    }
                 }
             }
         }
     }
+}

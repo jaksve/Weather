@@ -25,7 +25,7 @@ data class SmhiTimeSeries (
     val windDirection : Int = timeSeries.data.windDirection,
     val cloudAreaFraction : Int = timeSeries.data.cloudAreaFraction
 )
-data class ResponseData(
+data class SmhiResponseData(
     val response : SmhiForecastResponse,
     val createdTime : DateTime = DateTime(response.createdTime),
     val referenceTime : DateTime = DateTime(response.referenceTime),
