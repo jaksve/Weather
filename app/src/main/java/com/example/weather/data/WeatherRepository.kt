@@ -14,7 +14,6 @@ class WeatherRepository(private val api: SmhiApi) {
         //Log.d("WeatherRepository", "latString : $latString, lonString : $lonString")
         return  api.getPointForecast(
             lon = lonString, lat = latString)
-
     }
     companion object {
         fun create(): WeatherRepository {
