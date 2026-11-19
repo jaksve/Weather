@@ -1,5 +1,6 @@
 package com.example.weather.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,19 +16,17 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import com.example.weather.ui.viewmodels.HomeViewModel
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.weather.data.DateTime
 import com.example.weather.ui.viewmodels.Forecast
-
+import com.example.weather.ui.viewmodels.HomeViewModel
 
 
 @Composable
@@ -86,6 +85,10 @@ fun DetailsScreen(
     day :Int,
     onGoHome: ()->Unit
 ) {
+    BackHandler(enabled = true) {
+        onGoHome()
+    }
+
     val detailedForecast by vm.detailedForecast.collectAsState()
     Scaffold { innerPadding ->
         Box(

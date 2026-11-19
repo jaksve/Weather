@@ -22,10 +22,13 @@ class MainActivity : ComponentActivity(
 ) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
         enableEdgeToEdge()
         setContent {
             WeatherTheme {
                 WeatherApp()
+
             }
         }
     }
@@ -51,6 +54,7 @@ fun WeatherApp()
        "details"-> {
            homeViewModel.loadFavourites()
            DetailsScreen(vm = homeViewModel,currentDay,onGoHome = {currentScreen = "home"})
+
        }
        "settings"->{
            val settingsViewModel: SettingsVM = viewModel(factory = SettingsVM.Factory)
